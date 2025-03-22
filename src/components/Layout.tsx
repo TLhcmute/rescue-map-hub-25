@@ -1,12 +1,17 @@
 
 import { useState, useEffect } from "react";
-import { Outlet, NavLink, useLocation } from "react-router-dom";
+import { Outlet, NavLink, useLocation, Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Home, MapPin, Phone, Menu, X } from "lucide-react";
+import { Home, MapPin, Phone, Menu, X, LogOut, User } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
 
 const Layout = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const { authState, logout } = useAuth();
+  const { toast } = useToast();
   
   // Close mobile menu when route changes
   useEffect(() => {
@@ -14,10 +19,18 @@ const Layout = () => {
   }, [location.pathname]);
 
   const navItems = [
-    { path: "/", label: "Home", icon: <Home className="h-5 w-5 mr-2" /> },
-    { path: "/map", label: "Rescue Map", icon: <MapPin className="h-5 w-5 mr-2" /> },
-    { path: "/contact", label: "Contact Team", icon: <Phone className="h-5 w-5 mr-2" /> }
+    { path: "/", label: "Trang chủ", icon: <Home className="h-5 w-5 mr-2" /> },
+    { path: "/map", label: "Bản đồ cứu hộ", icon: <MapPin className="h-5 w-5 mr-2" /> },
+    { path: "/contact", label: "Liên hệ đội cứu hộ", icon: <Phone className="h-5 w-5 mr-2" /> }
   ];
+
+  const handleLogout = () => {
+    logout();
+    toast({
+      title: "Đăng xuất thành công",
+      description: "Hẹn gặp lại bạn!",
+    });
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -46,6 +59,23 @@ const Layout = () => {
               </NavLink>
             ))}
           </nav>
+          
+          {/* User profile and logout */}
+          <div className="hidden md:flex items-center space-x-4">
+            <div className="flex items-center text-sm">
+              <User className="h-4 w-4 mr-1" />
+              <span>{authState.user?.name || 'Người dùng'}</span>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="flex items-center text-red-500 hover:text-red-700 hover:bg-red-50"
+              onClick={handleLogout}
+            >
+              <LogOut className="h-4 w-4 mr-1" />
+              Đăng xuất
+            </Button>
+          </div>
           
           {/* Mobile Menu Button */}
           <button 
@@ -82,6 +112,21 @@ const Layout = () => {
                   {item.label}
                 </NavLink>
               ))}
+              
+              {/* Mobile user profile */}
+              <div className="flex items-center py-3 px-2 text-sm border-t border-gray-100 mt-2">
+                <User className="h-5 w-5 mr-2" />
+                <span>{authState.user?.name || 'Người dùng'}</span>
+              </div>
+              
+              {/* Mobile logout button */}
+              <button
+                onClick={handleLogout}
+                className="flex w-full items-center py-3 px-2 rounded-md text-sm font-medium text-red-500 hover:bg-red-50"
+              >
+                <LogOut className="h-5 w-5 mr-2" />
+                Đăng xuất
+              </button>
             </div>
           </div>
         )}

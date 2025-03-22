@@ -18,3 +18,15 @@ export interface FeedbackEntry {
 }
 
 export type PriorityFilter = 'all' | 'high' | 'low';
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+}
+
+export interface AuthState {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+}
