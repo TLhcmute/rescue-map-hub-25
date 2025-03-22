@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import { useToast } from "@/components/ui/use-toast";
@@ -10,20 +9,6 @@ import { Loader2, MapPin, Check } from "lucide-react";
 import { mockRescueLocations } from "@/data/mockData";
 import { RescueLocation, PriorityFilter } from "@/types";
 import L from "leaflet";
-
-// Import leaflet styles - we'll add this to the index.html in the head
-useEffect(() => {
-  // Check if the leaflet CSS is already added
-  if (!document.getElementById("leaflet-css")) {
-    const link = document.createElement("link");
-    link.id = "leaflet-css";
-    link.rel = "stylesheet";
-    link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-    link.integrity = "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=";
-    link.crossOrigin = "";
-    document.head.appendChild(link);
-  }
-}, []);
 
 // Custom marker icons
 const createMarkerIcon = (priority: 'high' | 'low', isNew: boolean) => {
@@ -62,6 +47,20 @@ const MapPage = () => {
   const [loading, setLoading] = useState(true);
   const [resolving, setResolving] = useState<string | null>(null);
   const [mapCenter] = useState<[number, number]>([21.0278, 105.8342]); // Default center: Hanoi
+
+  // Add leaflet styles - moved inside the component
+  useEffect(() => {
+    // Check if the leaflet CSS is already added
+    if (!document.getElementById("leaflet-css")) {
+      const link = document.createElement("link");
+      link.id = "leaflet-css";
+      link.rel = "stylesheet";
+      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+      link.integrity = "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=";
+      link.crossOrigin = "";
+      document.head.appendChild(link);
+    }
+  }, []);
 
   // Load and filter locations
   useEffect(() => {
