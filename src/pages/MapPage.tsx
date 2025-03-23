@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, MapPin, Check } from "lucide-react";
-import { mockRescueLocations } from "@/data/mockData";
+import { getRescueLocations } from "@/data/mockData"; // Import hàm lấy dữ liệu API
 import { RescueLocation, PriorityFilter } from "@/types";
 import L from "leaflet";
 
@@ -86,32 +86,52 @@ const MapPage = () => {
   useEffect(() => {
     setLoading(true);
 
-    // Simulate API fetch delay
-    const timer = setTimeout(() => {
-      let filteredLocations = [...mockRescueLocations];
+    const fetchData = async () => {
+      try {
+        const data = await getRescueLocations(); // Gọi hàm lấy dữ liệu từ API
+        let filteredLocations = data;
 
-      if (priorityFilter !== "all") {
-        filteredLocations = filteredLocations.filter(
-          (loc) => loc.priority === priorityFilter
-        );
+        if (priorityFilter !== "all") {
+          filteredLocations = filteredLocations.filter(
+            (loc) => loc.priority === priorityFilter
+          );
+        }
+
+        setLocations(filteredLocations);
+        setLoading(false);
+      } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu cứu hộ:", error);
+        setLoading(false);
       }
+    };
 
-      setLocations(filteredLocations);
-      setLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
+    fetchData();
   }, [priorityFilter]);
 
-  // Handle marking a location as resolved
+  // Xóa phần tử
   const handleMarkResolved = useCallback(
-    (id: string) => {
+    async (id: string) => {
       setResolving(id);
 
-      // Simulate API call delay
-      setTimeout(() => {
+      try {
+        // Gửi yêu cầu DELETE tới API để xóa vị trí khỏi backend
+        const response = await fetch(
+          `https://byteforce.caohoangphuc.id.vn/nodejs/api/users/${id}`,
+          {
+            method: "DELETE", // Phương thức DELETE để xóa dữ liệu
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        // Kiểm tra nếu API trả về lỗi
+        if (!response.ok) {
+          throw new Error("Không thể xóa vị trí cứu hộ");
+        }
+
+        // Cập nhật lại danh sách vị trí trên frontend sau khi xóa thành công
         setLocations((prev) => prev.filter((loc) => loc.id !== id));
-        setResolving(null);
 
         toast({
           title: "Vị trí đã được đánh dấu là đã giải quyết",
@@ -119,20 +139,35 @@ const MapPage = () => {
             "Vị trí cứu hộ đã được đánh dấu là đã giải quyết và đã xóa khỏi bản đồ.",
           variant: "default",
         });
-      }, 1500);
+      } catch (error) {
+        console.error(error);
+        toast({
+          title: "Lỗi khi xóa vị trí",
+          description: "Có lỗi xảy ra khi xóa vị trí cứu hộ.",
+          variant: "destructive",
+        });
+      } finally {
+        setResolving(null); // Đảm bảo kết thúc quá trình giải quyết
+      }
     },
     [toast]
   );
 
   // Format date helper
   const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat("en-US", {
-      hour: "numeric",
-      minute: "numeric",
-      hour12: true,
-      day: "numeric",
-      month: "short",
-    }).format(date);
+    // Kiểm tra nếu date là một đối tượng Date hợp lệ
+    if (date instanceof Date && !isNaN(date.getTime())) {
+      return new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        minute: "numeric",
+        hour12: true,
+        day: "numeric",
+        month: "short",
+      }).format(date);
+    } else {
+      console.error("Invalid date value");
+      return ""; // Hoặc giá trị mặc định khác nếu không hợp lệ
+    }
   };
 
   return (
