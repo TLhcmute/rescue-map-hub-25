@@ -1,10 +1,16 @@
-
 import { useState, useRef, FormEvent } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Phone, Mail, MapPin, Send, Loader2, Clock } from "lucide-react";
 import { mockFeedbackEntries } from "@/data/mockData";
 import { FeedbackEntry } from "@/types";
@@ -14,14 +20,15 @@ const ContactPage = () => {
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [feedbackEntries, setFeedbackEntries] = useState<FeedbackEntry[]>(mockFeedbackEntries);
+  const [feedbackEntries, setFeedbackEntries] =
+    useState<FeedbackEntry[]>(mockFeedbackEntries);
   const formRef = useRef<HTMLFormElement>(null);
 
   // Handle form submission
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    
+
     // Simulate sending data
     setTimeout(() => {
       // Create new feedback entry
@@ -29,23 +36,23 @@ const ContactPage = () => {
         id: Date.now().toString(),
         name,
         message,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
-      
+
       // Add to list (prepend to show newest first)
-      setFeedbackEntries(prev => [newEntry, ...prev]);
-      
+      setFeedbackEntries((prev) => [newEntry, ...prev]);
+
       // Reset form
       setName("");
       setMessage("");
       setSubmitting(false);
-      
+
       // Show toast
       toast({
-        title: "Feedback Sent!",
-        description: "Your feedback has been received by the rescue team.",
+        title: "Phản hồi đã gửi!",
+        description: "Phản hồi của bạn đã được nhận bởi đội cứu hộ.",
       });
-      
+
       if (formRef.current) {
         formRef.current.reset();
       }
@@ -55,41 +62,41 @@ const ContactPage = () => {
   // Format timestamp helper
   const formatTimeAgo = (date: Date) => {
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-    
+
     let interval = seconds / 31536000;
-    if (interval > 1) return Math.floor(interval) + " years ago";
-    
+    if (interval > 1) return Math.floor(interval) + " năm trước";
+
     interval = seconds / 2592000;
-    if (interval > 1) return Math.floor(interval) + " months ago";
-    
+    if (interval > 1) return Math.floor(interval) + " tháng trước";
+
     interval = seconds / 86400;
-    if (interval > 1) return Math.floor(interval) + " days ago";
-    
+    if (interval > 1) return Math.floor(interval) + " ngày trước";
+
     interval = seconds / 3600;
-    if (interval > 1) return Math.floor(interval) + " hours ago";
-    
+    if (interval > 1) return Math.floor(interval) + " giờ trước";
+
     interval = seconds / 60;
-    if (interval > 1) return Math.floor(interval) + " minutes ago";
-    
-    return Math.floor(seconds) + " seconds ago";
+    if (interval > 1) return Math.floor(interval) + " phút trước";
+
+    return Math.floor(seconds) + " giây trước";
   };
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Contact Rescue Team</h1>
-        <p className="text-muted-foreground mt-1">Get in touch with the rescue coordination team</p>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Liên hệ đội cứu hộ
+        </h1>
+        <p className="text-muted-foreground mt-1">Liên hệ với đội cứu hộ</p>
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Contact Information */}
         <div className="lg:col-span-1 space-y-6">
           <Card className="border-blue-200 overflow-hidden">
             <CardHeader className="bg-gradient-to-br from-blue-50 to-blue-100 pb-6">
-              <CardTitle>Contact Information</CardTitle>
-              <CardDescription>
-                Ways to reach the rescue coordination team
-              </CardDescription>
+              <CardTitle>Thông tin liên hệ</CardTitle>
+              <CardDescription>Cách liên hệ với đội cứu hộ</CardDescription>
             </CardHeader>
             <CardContent className="pt-6 space-y-4">
               <div className="flex items-start space-x-4">
@@ -97,12 +104,14 @@ const ContactPage = () => {
                   <Phone className="h-5 w-5 text-blue-600" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-sm">Emergency Hotline</h3>
+                  <h3 className="font-medium text-sm">Đường dây cứu hộ</h3>
                   <p className="text-blue-600">+84 123 456 789</p>
-                  <p className="text-xs text-gray-500 mt-1">Available 24/7 for emergencies</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Sẵn sàng 24/7 cho các tình huống khẩn cấp
+                  </p>
                 </div>
               </div>
-              
+
               <div className="flex items-start space-x-4">
                 <div className="bg-blue-100 p-2 rounded-full">
                   <Mail className="h-5 w-5 text-blue-600" />
@@ -110,90 +119,98 @@ const ContactPage = () => {
                 <div>
                   <h3 className="font-medium text-sm">Email</h3>
                   <p className="text-blue-600">rescue@maphub.org</p>
-                  <p className="text-xs text-gray-500 mt-1">Response within 24 hours</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Phản hồi trong vòng 24 giờ
+                  </p>
                 </div>
               </div>
-              
+
               <div className="flex items-start space-x-4">
                 <div className="bg-blue-100 p-2 rounded-full">
                   <MapPin className="h-5 w-5 text-blue-600" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-sm">Headquarters</h3>
-                  <p className="text-gray-700">123 Rescue Center,<br />Cau Giay District, Hanoi</p>
-                  <p className="text-xs text-gray-500 mt-1">Open 8 AM - 8 PM daily</p>
+                  <h3 className="font-medium text-sm">Trụ sở chính</h3>
+                  <p className="text-gray-700">
+                    123 Trung tâm cứu hộ,
+                    <br />
+                    Quận Cầu Giấy, Hà Nội
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Mở cửa từ 8 giờ sáng đến 8 giờ tối hàng ngày
+                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="border-blue-200">
             <CardHeader>
-              <CardTitle>Operation Hours</CardTitle>
-              <CardDescription>
-                Our team is here to help
-              </CardDescription>
+              <CardTitle>Giờ hoạt động</CardTitle>
+              <CardDescription>Đội cứu hộ sẵn sàng hỗ trợ</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <Clock className="h-4 w-4 mr-2 text-blue-500" />
-                  <span className="text-sm">Emergency Operations</span>
+                  <span className="text-sm">Hoạt động khẩn cấp</span>
                 </div>
                 <span className="text-sm font-medium">24/7</span>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <Clock className="h-4 w-4 mr-2 text-blue-500" />
-                  <span className="text-sm">Administrative Office</span>
+                  <span className="text-sm">Trụ sở quản lý</span>
                 </div>
-                <span className="text-sm font-medium">8 AM - 5 PM</span>
+                <span className="text-sm font-medium">
+                  8 giờ sáng - 5 giờ chiều
+                </span>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <Clock className="h-4 w-4 mr-2 text-blue-500" />
-                  <span className="text-sm">Support Center</span>
+                  <span className="text-sm">Trung tâm hỗ trợ</span>
                 </div>
-                <span className="text-sm font-medium">7 AM - 9 PM</span>
+                <span className="text-sm font-medium">
+                  7 giờ sáng - 9 giờ tối
+                </span>
               </div>
             </CardContent>
           </Card>
         </div>
-        
+
         {/* Feedback and Communication Section */}
         <div className="lg:col-span-2 space-y-6">
           {/* Feedback Form */}
           <Card className="border-blue-200">
             <CardHeader>
-              <CardTitle>Send Feedback</CardTitle>
-              <CardDescription>
-                Share your feedback with the rescue coordination team
-              </CardDescription>
+              <CardTitle>Gửi phản hồi</CardTitle>
+              <CardDescription>Chia sẻ phản hồi với đội cứu hộ</CardDescription>
             </CardHeader>
             <form ref={formRef} onSubmit={handleSubmit}>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <label htmlFor="name" className="text-sm font-medium">
-                    Your Name
+                    Tên của bạn
                   </label>
                   <Input
                     id="name"
-                    placeholder="Enter your name"
+                    placeholder="Nhập tên của bạn"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <label htmlFor="message" className="text-sm font-medium">
-                    Message
+                    Tin nhắn
                   </label>
                   <Textarea
                     id="message"
-                    placeholder="Enter your message or feedback..."
+                    placeholder="Nhập tin nhắn hoặc phản hồi..."
                     rows={5}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
@@ -202,46 +219,50 @@ const ContactPage = () => {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   disabled={submitting || !name || !message}
                   className="w-full sm:w-auto"
                 >
                   {submitting ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Sending...
+                      Gửi...
                     </>
                   ) : (
                     <>
                       <Send className="h-4 w-4 mr-2" />
-                      Send Feedback
+                      Gửi phản hồi
                     </>
                   )}
                 </Button>
               </CardFooter>
             </form>
           </Card>
-          
+
           {/* Feedback Log */}
           <Card className="border-blue-200">
             <CardHeader>
-              <CardTitle>Recent Feedback</CardTitle>
+              <CardTitle>Phản hồi gần đây</CardTitle>
               <CardDescription>
-                Feedback from rescue operation participants
+                Phản hồi từ thành viên tham gia cứu hộ
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {feedbackEntries.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    <p>No feedback entries yet.</p>
+                    <p>Không có phản hồi từ thành viên tham gia cứu hộ.</p>
                   </div>
                 ) : (
                   feedbackEntries.map((entry, index) => (
-                    <div 
+                    <div
                       key={entry.id}
-                      className={`p-4 border rounded-lg ${index === 0 ? 'border-blue-300 bg-blue-50 animate-fade-in' : 'border-gray-200'}`}
+                      className={`p-4 border rounded-lg ${
+                        index === 0
+                          ? "border-blue-300 bg-blue-50 animate-fade-in"
+                          : "border-gray-200"
+                      }`}
                     >
                       <div className="flex justify-between items-start">
                         <h3 className="font-medium">{entry.name}</h3>

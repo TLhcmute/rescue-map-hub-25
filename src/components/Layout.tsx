@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Outlet, NavLink, useLocation, Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -12,7 +11,7 @@ const Layout = () => {
   const location = useLocation();
   const { authState, logout } = useAuth();
   const { toast } = useToast();
-  
+
   // Close mobile menu when route changes
   useEffect(() => {
     setIsMenuOpen(false);
@@ -20,8 +19,16 @@ const Layout = () => {
 
   const navItems = [
     { path: "/", label: "Trang chủ", icon: <Home className="h-5 w-5 mr-2" /> },
-    { path: "/map", label: "Bản đồ cứu hộ", icon: <MapPin className="h-5 w-5 mr-2" /> },
-    { path: "/contact", label: "Liên hệ đội cứu hộ", icon: <Phone className="h-5 w-5 mr-2" /> }
+    {
+      path: "/map",
+      label: "Bản đồ cứu hộ",
+      icon: <MapPin className="h-5 w-5 mr-2" />,
+    },
+    {
+      path: "/contact",
+      label: "Liên hệ đội cứu hộ",
+      icon: <Phone className="h-5 w-5 mr-2" />,
+    },
   ];
 
   const handleLogout = () => {
@@ -37,38 +44,43 @@ const Layout = () => {
       <header className="sticky top-0 z-50 w-full border-b bg-white/50 backdrop-blur-sm">
         <div className="container flex h-16 items-center justify-between px-4 md:px-6">
           <div className="flex items-center gap-2">
-            <span className="text-xl font-semibold tracking-tight">Rescue Map Hub</span>
+            <span className="text-xl font-semibold tracking-tight">
+              ByteRescue Map Hub
+            </span>
           </div>
-          
+
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
             {navItems.map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}
-                className={({ isActive }) => cn(
-                  "flex items-center text-sm font-medium transition-colors hover:text-primary relative py-2",
-                  {
-                    "text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary after:content-['']": isActive,
-                    "text-muted-foreground": !isActive
-                  }
-                )}
+                className={({ isActive }) =>
+                  cn(
+                    "flex items-center text-sm font-medium transition-colors hover:text-primary relative py-2",
+                    {
+                      "text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary after:content-['']":
+                        isActive,
+                      "text-muted-foreground": !isActive,
+                    }
+                  )
+                }
               >
                 {item.icon}
                 {item.label}
               </NavLink>
             ))}
           </nav>
-          
+
           {/* User profile and logout */}
           <div className="hidden md:flex items-center space-x-4">
             <div className="flex items-center text-sm">
               <User className="h-4 w-4 mr-1" />
-              <span>{authState.user?.name || 'Người dùng'}</span>
+              <span>{authState.user?.name || "Người dùng"}</span>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               className="flex items-center text-red-500 hover:text-red-700 hover:bg-red-50"
               onClick={handleLogout}
             >
@@ -76,9 +88,9 @@ const Layout = () => {
               Đăng xuất
             </Button>
           </div>
-          
+
           {/* Mobile Menu Button */}
-          <button 
+          <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="inline-flex md:hidden items-center justify-center rounded-md p-2 text-primary hover:bg-accent hover:text-primary-foreground"
             aria-expanded={isMenuOpen}
@@ -91,7 +103,7 @@ const Layout = () => {
             )}
           </button>
         </div>
-        
+
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <div className="md:hidden border-t bg-white animate-slide-in">
@@ -100,25 +112,27 @@ const Layout = () => {
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  className={({ isActive }) => cn(
-                    "flex items-center py-3 px-2 rounded-md text-sm font-medium transition-colors hover:bg-accent",
-                    {
-                      "bg-accent text-primary": isActive,
-                      "text-foreground": !isActive
-                    }
-                  )}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center py-3 px-2 rounded-md text-sm font-medium transition-colors hover:bg-accent",
+                      {
+                        "bg-accent text-primary": isActive,
+                        "text-foreground": !isActive,
+                      }
+                    )
+                  }
                 >
                   {item.icon}
                   {item.label}
                 </NavLink>
               ))}
-              
+
               {/* Mobile user profile */}
               <div className="flex items-center py-3 px-2 text-sm border-t border-gray-100 mt-2">
                 <User className="h-5 w-5 mr-2" />
-                <span>{authState.user?.name || 'Người dùng'}</span>
+                <span>{authState.user?.name || "Người dùng"}</span>
               </div>
-              
+
               {/* Mobile logout button */}
               <button
                 onClick={handleLogout}
@@ -131,15 +145,15 @@ const Layout = () => {
           </div>
         )}
       </header>
-      
+
       <main className="flex-1 container px-4 md:px-6 py-6 md:py-8">
         <Outlet />
       </main>
-      
+
       <footer className="border-t py-6 md:py-8">
         <div className="container flex flex-col items-center justify-center gap-2 px-4 md:px-6 text-center">
           <p className="text-sm text-muted-foreground">
-            © 2024 Rescue Map Hub. All rights reserved.
+            © 2024 ByteRescue Map Hub. All rights reserved.
           </p>
         </div>
       </footer>
