@@ -17,12 +17,12 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, MapPin, Check } from "lucide-react";
-import { getRescueLocations } from "@/data/mockData"; // Import hàm lấy dữ liệu API
+import { Loader2, MapPin, Check, Navigation } from "lucide-react";
+import { getRescueLocations } from "@/data/mockData";
 import { RescueLocation, PriorityFilter } from "@/types";
 import L from "leaflet";
 
-// Custom marker icons
+// Custom marker icons cho vị trí cứu hộ
 const createMarkerIcon = (priority: "high" | "low", isNew: boolean) => {
   return L.divIcon({
     className: `rescue-marker-${priority}`,
@@ -44,6 +44,20 @@ const createMarkerIcon = (priority: "high" | "low", isNew: boolean) => {
   });
 };
 
+// Icon cho vị trí hiện tại của người cứu hộ
+const rescuerIcon = L.divIcon({
+  className: "rescuer-marker",
+  html: `<div>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="36" height="36" fill="#3B82F6" stroke="white" stroke-width="2">
+      <path d="M12 4a3 3 0 0 0-3 3c0 1.1.6 2 1.5 2.5V12h3V9.5c.9-.5 1.5-1.4 1.5-2.5a3 3 0 0 0-3-3zM8 13v6a3 3 0 0 0 3 3h2a3 3 0 0 0 3-3v-6H8z"/>
+      <path d="M10 15h4v2h-4z"/>
+    </svg>
+  </div>`,
+  iconSize: [36, 36],
+  iconAnchor: [18, 36],
+  popupAnchor: [0, -36],
+});
+
 // Center map component
 const SetMapCenter = ({ locations }: { locations: RescueLocation[] }) => {
   const map = useMap();
@@ -60,17 +74,123 @@ const SetMapCenter = ({ locations }: { locations: RescueLocation[] }) => {
   return null;
 };
 
+// Component để xử lý nút "Đến vị trí của tôi"
+const FlyToRescuer = ({
+  rescuerPosition,
+}: {
+  rescuerPosition: [number, number] | null;
+}) => {
+  const map = useMap();
+
+  const handleFlyTo = () => {
+    if (rescuerPosition) {
+      map.flyTo(rescuerPosition, 15, { duration: 1 }); // Zoom level 15, animation 1s
+    }
+  };
+
+  return rescuerPosition ? (
+    <Button
+      onClick={handleFlyTo}
+      className="absolute top-4 right-4 z-[1000] bg-blue-500 text-white hover:bg-blue-600"
+    >
+      <Navigation className="h-4 w-4 mr-2" />
+      Đến vị trí của tôi
+    </Button>
+  ) : null;
+};
+
+// Component hiển thị danh sách khoảng cách
+const DistanceList = ({
+  rescuerPosition,
+  locations,
+}: {
+  rescuerPosition: [number, number] | null;
+  locations: RescueLocation[];
+}) => {
+  if (!rescuerPosition || locations.length === 0) {
+    return (
+      <Card className="border-blue-200">
+        <CardHeader>
+          <CardTitle className="text-lg">
+            Khoảng cách tới vị trí cứu hộ
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            {rescuerPosition
+              ? "Không có vị trí cứu hộ nào."
+              : "Đang lấy vị trí của bạn..."}
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const distances = locations.map((location) => {
+    const rescuerLatLng = L.latLng(rescuerPosition);
+    const locationLatLng = L.latLng(location.latitude, location.longitude);
+    const distance = rescuerLatLng.distanceTo(locationLatLng) / 1000; // Chuyển sang km
+    return {
+      id: location.id,
+      message: location.message,
+      distance: distance.toFixed(2),
+    };
+  });
+
+  return (
+    <Card className="border-blue-200">
+      <CardHeader>
+        <CardTitle className="text-lg">Khoảng cách tới vị trí cứu hộ</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ul className="space-y-2">
+          {distances.map((item) => (
+            <li key={item.id} className="flex justify-between items-center">
+              <span>{item.message}</span>
+              <Badge variant="outline">{item.distance} km</Badge>
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
+  );
+};
+
 const MapPage = () => {
   const { toast } = useToast();
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("all");
   const [locations, setLocations] = useState<RescueLocation[]>([]);
   const [loading, setLoading] = useState(true);
   const [resolving, setResolving] = useState<string | null>(null);
-  const [mapCenter] = useState<[number, number]>([21.0278, 105.8342]); // Default center: Hanoi
+  const [mapCenter] = useState<[number, number]>([21.0278, 105.8342]);
+  const [rescuerPosition, setRescuerPosition] = useState<
+    [number, number] | null
+  >(null);
 
-  // Add leaflet styles - moved inside the component
+  // Lấy vị trí hiện tại của người cứu hộ
   useEffect(() => {
-    // Check if the leaflet CSS is already added
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setRescuerPosition([
+            position.coords.latitude,
+            position.coords.longitude,
+          ]);
+        },
+        (error) => {
+          console.error("Lỗi lấy vị trí cứu hộ:", error);
+          toast({
+            title: "Không lấy được vị trí",
+            description: "Vui lòng bật định vị để hiển thị vị trí của bạn.",
+            variant: "destructive",
+          });
+        }
+      );
+    }
+  }, [toast]);
+
+  // Add leaflet styles
+  useEffect(() => {
     if (!document.getElementById("leaflet-css")) {
       const link = document.createElement("link");
       link.id = "leaflet-css";
@@ -88,7 +208,7 @@ const MapPage = () => {
 
     const fetchData = async () => {
       try {
-        const data = await getRescueLocations(); // Gọi hàm lấy dữ liệu từ API
+        const data = await getRescueLocations();
         let filteredLocations = data;
 
         if (priorityFilter !== "all") {
@@ -114,23 +234,20 @@ const MapPage = () => {
       setResolving(id);
 
       try {
-        // Gửi yêu cầu DELETE tới API để xóa vị trí khỏi backend
         const response = await fetch(
           `https://byteforce.caohoangphuc.id.vn/nodejs/api/users/${id}`,
           {
-            method: "DELETE", // Phương thức DELETE để xóa dữ liệu
+            method: "DELETE",
             headers: {
               "Content-Type": "application/json",
             },
           }
         );
 
-        // Kiểm tra nếu API trả về lỗi
         if (!response.ok) {
           throw new Error("Không thể xóa vị trí cứu hộ");
         }
 
-        // Cập nhật lại danh sách vị trí trên frontend sau khi xóa thành công
         setLocations((prev) => prev.filter((loc) => loc.id !== id));
 
         toast({
@@ -147,7 +264,7 @@ const MapPage = () => {
           variant: "destructive",
         });
       } finally {
-        setResolving(null); // Đảm bảo kết thúc quá trình giải quyết
+        setResolving(null);
       }
     },
     [toast]
@@ -155,7 +272,6 @@ const MapPage = () => {
 
   // Format date helper
   const formatDate = (date: Date) => {
-    // Kiểm tra nếu date là một đối tượng Date hợp lệ
     if (date instanceof Date && !isNaN(date.getTime())) {
       return new Intl.DateTimeFormat("en-US", {
         hour: "numeric",
@@ -166,10 +282,9 @@ const MapPage = () => {
       }).format(date);
     } else {
       console.error("Invalid date value");
-      return ""; // Hoặc giá trị mặc định khác nếu không hợp lệ
+      return "";
     }
   };
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -234,10 +349,11 @@ const MapPage = () => {
                 zoomControl={false}
               >
                 <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
 
+                {/* Marker cho các vị trí cứu hộ */}
                 {locations.map((location) => (
                   <Marker
                     key={location.id}
@@ -303,12 +419,32 @@ const MapPage = () => {
                   </Marker>
                 ))}
 
+                {/* Marker cho vị trí hiện tại của người cứu hộ */}
+                {rescuerPosition && (
+                  <Marker position={rescuerPosition} icon={rescuerIcon}>
+                    <Popup>
+                      <div className="space-y-2">
+                        <p className="font-medium text-gray-900">
+                          Vị trí của bạn
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Kinh độ: {rescuerPosition[0]}, Vĩ độ:{" "}
+                          {rescuerPosition[1]}
+                        </p>
+                      </div>
+                    </Popup>
+                  </Marker>
+                )}
+
                 <SetMapCenter locations={locations} />
               </MapContainer>
             )}
           </div>
         </CardContent>
       </Card>
+
+      {/* Thêm component hiển thị khoảng cách */}
+      <DistanceList rescuerPosition={rescuerPosition} locations={locations} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card className="border-blue-200">
@@ -349,6 +485,21 @@ const MapPage = () => {
                 </div>
                 <span className="text-blue-500 font-medium">Chỉ dẫn mới</span>
               </div>
+              <div className="flex items-center">
+                <div className="w-6 h-6 mr-3">
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="24"
+                    height="24"
+                    fill="#3B82F6"
+                  >
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                  </svg>
+                </div>
+                <span className="text-blue-500 font-medium">
+                  Vị trí của bạn
+                </span>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -382,6 +533,10 @@ const MapPage = () => {
               <li>
                 Các dấu chỉ dẫn vàng chỉ ra các tình huống cứu hộ ưu tiên thấp
                 vẫn cần sự giúp đỡ.
+              </li>
+              <li>
+                Dấu chỉ dẫn xanh dương hiển thị vị trí hiện tại của bạn trên bản
+                đồ.
               </li>
             </ul>
           </CardContent>
